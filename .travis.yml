@@ -1,0 +1,10 @@
+sudo: false
+
+language:
+  - cpp
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ..
+  - cmake --build .
