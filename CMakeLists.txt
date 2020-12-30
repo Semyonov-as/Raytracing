@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(enabling_gtest CXX)
+project(book1_raytracer)
 
 # place binaries and libraries according to GNU standards
 include(GNUInstallDirs)
