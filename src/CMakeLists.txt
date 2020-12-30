@@ -1,3 +1,5 @@
+project(book1_raytracer_src)
+
 add_library(Vec3 STATIC Vec3.hpp)
 add_library(Point3 STATIC Point3.hpp)
 add_library(Color STATIC Color.hpp)
