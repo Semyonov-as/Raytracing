@@ -14,9 +14,9 @@ public:
     Vec3() : e{0, 0, 0} {}
     Vec3(T e0, T e1, T e2) : e{e0, e1, e2} {}
 
-    T& x() const noexcept { return e[0];}
-    T& y() const noexcept { return e[1];}
-    T& z() const noexcept { return e[2];}
+    T& x() noexcept { return e[0];}
+    T& y() noexcept { return e[1];}
+    T& z() noexcept { return e[2];}
 
     Vec3 operator-() const noexcept { return Vec3(-e[0], -e[1], -e[2]);}
     T operator[](int i) const  { 
