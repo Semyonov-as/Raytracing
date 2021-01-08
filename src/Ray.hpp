@@ -2,7 +2,6 @@
 
 #include "Vector3.hpp"
 
-
 template<typename T>
 class Ray {
 public:

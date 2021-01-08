@@ -4,7 +4,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 template<typename T>
 class Vector3
 {
