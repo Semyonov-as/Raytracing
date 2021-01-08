@@ -1,8 +1,8 @@
 #pragma once
 
-#include<iostream>
-#include<cmath>
-#include<stdexcept>
+#include <iostream>
+#include <cmath>
+#include <stdexcept>
 
 
 template<typename T>
