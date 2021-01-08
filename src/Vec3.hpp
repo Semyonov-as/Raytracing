@@ -39,6 +39,13 @@ public:
 
         return *this;
     }
+    Vec3& operator-=(const Vec3& r) {
+        e[0] -= r[0];
+        e[1] -= r[1];
+        e[2] -= r[2];
+
+        return *this;
+    }
     Vec3& operator*=(const T a) {
         e[0] *= a;
         e[1] *= a;
