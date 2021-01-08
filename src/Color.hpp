@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Vec3.hpp"
+#include "Vector3.hpp"
 #include <iostream>
 
-using Color3D = Vec3D;
-using Color3F = Vec3F;
+using Color3D = Vector3D;
+using Color3F = Vector3F;
 
 
 void write_color(std::ostream &out, Color3D pixel_color) {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vec3.hpp"
+#include "Vector3.hpp"
 
-using Point3D = Vec3D;
-using Point3F = Vec3F;
+using Point3D = Vector3D;
+using Point3F = Vector3F;
