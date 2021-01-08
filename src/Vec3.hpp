@@ -2,6 +2,7 @@
 
 #include<iostream>
 #include<cmath>
+#include<stdexcept>
 
 
 template<typename T>
@@ -18,8 +19,18 @@ public:
     T& z() const noexcept { return e[2];}
 
     Vec3 operator-() const noexcept { return Vec3(-e[0], -e[1], -e[2]);}
-    T operator[](int i) const  { return (i < 3) ? e[i] : NULL;}
-    T& operator[](int i ) { return (i < 3) ? e[i] : NULL;}
+    T operator[](int i) const  { 
+		if (i>2 || i<0)
+			throw std::invalid_argument("wrong index");
+		else
+			return e[i];
+	}
+    T& operator[](int i ) { 
+		if (i>2 || i<0)
+			throw std::invalid_argument("wrong index");
+		else
+			return e[i];
+	}
 
     Vec3& operator+=(const Vec3& r) {
         e[0] += r[0];
