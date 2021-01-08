@@ -8,7 +8,6 @@ script:
   - cd build
   - cmake ..
   - cmake --build .
-  - g++ ../main.cpp -std=c++11
   
 notifications:
   email: false
