@@ -10,3 +10,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 add_subdirectory(src)
 
 add_executable(main main.cpp)
+target_compile_features(main PUBLIC cxx_std_11)
