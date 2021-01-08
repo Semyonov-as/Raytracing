@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include <src/Vec3.hpp>
-#include <src/Point3.hpp>
-#include <src/Color.hpp>
-#include <src/Ray.hpp>
+#include "src/Vec3.hpp"
+#include "src/Point3.hpp"
+#include "src/Color.hpp"
+#include "src/Ray.hpp"
 
 using namespace std;
 
