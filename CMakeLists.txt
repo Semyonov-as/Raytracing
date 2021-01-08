@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(book1_raytracer)
 
+target_compile_features(myapp cxx_std_17)
+
 # place binaries and libraries according to GNU standards
 include(GNUInstallDirs)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
