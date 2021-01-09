@@ -17,6 +17,10 @@ public:
     T& y() noexcept { return e[1];}
     T& z() noexcept { return e[2];}
 
+    const T& x() const { return e[0];}
+    const T& y() const { return e[1];}
+    const T& z() const { return e[2];}
+
     Vector3 operator-() const noexcept { return Vector3(-e[0], -e[1], -e[2]);}
     T operator[](int i) const  { 
 		if (i>2 || i<0)
