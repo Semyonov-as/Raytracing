@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "src/Vector3.hpp"
 #include "src/Point3.hpp"
 #include "src/Color.hpp"
 #include "src/Ray.hpp"
+#include "src/Vector3DF.hpp"
 
 ColorF ray_color(const Ray<float>& r){
 	float t = 0.5*(r.direction().unit().y()+1.0);
