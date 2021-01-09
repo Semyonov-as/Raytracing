@@ -38,7 +38,7 @@ bool Sphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const 
 
     rec.t = root;
     rec.p = r.at(root);
-    rec.normal = (rec.p - center)/radius;
+    rec.set_face_normal(r, (rec.p - center)/radius);
 
     return true;
 }

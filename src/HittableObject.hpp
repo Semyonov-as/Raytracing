@@ -10,6 +10,12 @@ public:
     Vector3<T> p;
     Vector3<T> normal;
     T t;
+    bool front_face;
+
+    void set_face_normal(const Ray<T>& r, const Vector3<T>& out_normal) {
+        front_face = dot(r.direction(), out_normal) < 0;
+        normal = front_face ? out_normal : -out_normal;
+    }
 };
 
 template<typename T>
