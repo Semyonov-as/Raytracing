@@ -1,32 +1,41 @@
 #include <iostream>
+#include <cmath>
 
 #include "src/Point3.hpp"
 #include "src/Color.hpp"
 #include "src/Ray.hpp"
 #include "src/Vector3DF.hpp"
+#include "src/HittableObject.hpp"
+#include "src/Sphere.hpp"
 
-bool hit_sphere(const Point3F& center, float radius, const Ray<float>& r) {
+float hit_sphere(const Point3F& center, float radius, const Ray<float>& r) {
     Vector3<float> oc = r.origin() - center;
-    float a = dot(r.direction(), r.direction());
-    float b = 2*dot(r.direction(), oc);
-    float c = dot(oc, oc) - radius*radius;
-    float D = b*b - 4*a*c;
+    float a = r.direction().length_squared();
+    float half_b = dot(r.direction(), oc);
+    float c = oc.length_squared() - radius*radius;
+    float D = half_b*half_b - a*c;
 
-    return D>0;
+    if(D < 0)
+        return -1.0;
+    else
+        return (-half_b - sqrt(D))/a;
+
 }
 
 ColorF ray_color(const Ray<float>& r){
-    if(hit_sphere(Point3F(0, 0, -1), 0.2, r)) {
-        return ColorF(1, 0, 0);
+    float t = hit_sphere(Point3F(0, 0, -1), 0.5, r);
+    if (t > 0.0) {
+        Vector3F N = (r.at(t) - Vector3F(0, 0, -1)).unit();
+        return 0.5*ColorF(N.x()+1, N.y()+1, N.z()+1 );
+    } else {
+        t = 0.5*(r.direction().unit().y()+1.0);
+        return (1.0 - t)*ColorF(1.0, 1.0, 1.0)+t*ColorF(0.5, 0.7, 1);
     }
-
-	float t = 0.5*(r.direction().unit().y()+1.0);
-	return (1.0 - t)*ColorF(1.0, 1.0, 1.0)+t*ColorF(0.5, 0.7, 1);
 }
 
 int main()
 {
-	
+
 	//Image settingis
 	const float aspect_ratio = 16.0/9.0;
 	const int image_width = 400;
