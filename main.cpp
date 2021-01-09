@@ -5,7 +5,21 @@
 #include "src/Ray.hpp"
 #include "src/Vector3DF.hpp"
 
+bool hit_sphere(const Point3F& center, float radius, const Ray<float>& r) {
+    Vector3<float> oc = r.origin() - center;
+    float a = dot(r.direction(), r.direction());
+    float b = 2*dot(r.direction(), oc);
+    float c = dot(oc, oc) - radius*radius;
+    float D = b*b - 4*a*c;
+
+    return D>0;
+}
+
 ColorF ray_color(const Ray<float>& r){
+    if(hit_sphere(Point3F(0, 0, -1), 0.2, r)) {
+        return ColorF(1, 0, 0);
+    }
+
 	float t = 0.5*(r.direction().unit().y()+1.0);
 	return (1.0 - t)*ColorF(1.0, 1.0, 1.0)+t*ColorF(0.5, 0.7, 1);
 }
