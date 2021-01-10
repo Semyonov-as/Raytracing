@@ -5,6 +5,8 @@
 #include "Vector3.hpp"
 
 #include <cmath>
+#include <stdexcept>
+
 
 template<typename T>
 class Sphere : public HittableObject<T> {
@@ -22,6 +24,8 @@ template<typename T>
 bool Sphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const noexcept {
     auto oc = r.origin() - center;
     auto a = r.direction().length_squared();
+    if(a == 0)
+        throw std::invalid_argument("wrong ray");
     auto half_b = dot(oc, r.direction());
     auto c = oc.length_squared() - radius*radius;
 
