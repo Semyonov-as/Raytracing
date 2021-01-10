@@ -6,6 +6,7 @@
 #include "src/Ray.hpp"
 #include "src/Vector3DF.hpp"
 #include "src/HittableObject.hpp"
+#include "src/HittableList.hpp"
 #include "src/Sphere.hpp"
 
 float hit_sphere(const Point3F& center, float radius, const Ray<float>& r) {
