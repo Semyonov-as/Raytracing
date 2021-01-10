@@ -12,7 +12,7 @@ public:
     T t;
     bool front_face;
 
-    void set_face_normal(const Ray<T>& r, const Vector3<T>& out_normal) {
+    void set_face_normal(const Ray<T>& r, const Vector3<T>& out_normal) noexcept {
         front_face = dot(r.direction(), out_normal) < 0;
         normal = front_face ? out_normal : -out_normal;
     }
@@ -21,6 +21,5 @@ public:
 template<typename T>
 class HittableObject {
 public:
-    virtual bool hit(const Ray<T>&, T, T, HitRecord<T>&) = 0;
+    virtual bool hit(const Ray<T>&, T, T, HitRecord<T>&) noexcept = 0;
 };
-
