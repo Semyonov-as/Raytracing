@@ -22,7 +22,7 @@ public:
 
 template<typename T>
 bool Sphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const noexcept {
-    auto oc = r.origin() - center;
+    auto oc = r.orig - center;
     auto a = r.direction().length_squared();
     if(a == 0)
         throw std::invalid_argument("wrong ray");

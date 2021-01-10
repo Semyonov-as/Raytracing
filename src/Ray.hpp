@@ -11,7 +11,6 @@ public:
     Ray() noexcept {}
     Ray(const Vector3<T> &origin, const Vector3<T> &direction) noexcept : orig(origin), dir(direction) {}
 
-    Vector3<T> origin() const noexcept { return orig;}
     Vector3<T> direction() const noexcept { return dir;}
 
     Vector3<T> at(T t) const noexcept { return orig + t*dir;}

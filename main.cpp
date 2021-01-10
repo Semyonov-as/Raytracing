@@ -10,7 +10,7 @@
 #include "src/Sphere.hpp"
 
 float hit_sphere(const Point3F& center, float radius, const Ray<float>& r) {
-    auto oc = r.origin() - center;
+    auto oc = r.orig - center;
     auto a = r.direction().length_squared();
     auto half_b = dot(r.direction(), oc);
     auto c = oc.length_squared() - radius*radius;
