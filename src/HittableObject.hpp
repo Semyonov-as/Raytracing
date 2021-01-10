@@ -21,5 +21,5 @@ public:
 template<typename T>
 class HittableObject {
 public:
-    virtual bool hit(const Ray<T>&, T, T, HitRecord<T>&) noexcept = 0;
+    virtual bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept = 0;
 };

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <memory>
 
 #include "src/Point3.hpp"
 #include "src/Color.hpp"
@@ -8,29 +9,16 @@
 #include "src/HittableObject.hpp"
 #include "src/HittableList.hpp"
 #include "src/Sphere.hpp"
+#include "src/General.hpp"
 
-float hit_sphere(const Point3F& center, float radius, const Ray<float>& r) {
-    auto oc = r.orig - center;
-    auto a = r.direction().length_squared();
-    auto half_b = dot(r.direction(), oc);
-    auto c = oc.length_squared() - radius*radius;
-    auto D = half_b*half_b - a*c;
 
-    if (D < 0)
-        return -1.0;
-    else
-        return (-half_b - sqrt(D))/a;
-}
+ColorF ray_color(const Ray<float>& r, const HittableObject<float>& obj) {
+    HitRecord<float> rec;
+    if(obj.hit(r, 0, infinity, rec))
+        return 0.5*(rec.normal + ColorF(1, 1, 1));
+    auto t = 0.5*(r.direction().unit().y()+1.0);
+    return (1.0 - t)*ColorF(1.0, 1.0, 1.0)+t*ColorF(0.5, 0.7, 1);
 
-ColorF ray_color(const Ray<float>& r) {
-    auto t = hit_sphere(Point3F(0, 0, -1), 0.5, r);
-    if (t > 0.0) {
-        Vector3F N = (r.at(t) - Vector3F(0, 0, -1)).unit();
-        return 0.5*ColorF(N.x()+1, N.y()+1, N.z()+1 );
-    } else {
-        t = 0.5*(r.direction().unit().y()+1.0);
-        return (1.0 - t)*ColorF(1.0, 1.0, 1.0)+t*ColorF(0.5, 0.7, 1);
-    }
 }
 
 int main() {
@@ -38,6 +26,11 @@ int main() {
     const float aspect_ratio = 16.0 / 9.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
+
+    //World setup
+    HittableList<float> world;
+    world.add(std::make_shared<Sphere<float>>(Point3F(0, 0, -1), 0.5));
+    world.add(std::make_shared<Sphere<float>>(Point3F(0, -100.5, -1), 100));
 
     //Camera settingis
     float viewport_height = 2.0;
@@ -58,7 +51,7 @@ int main() {
             float u = float(i)/(image_width-1);
             float v = float(j)/(image_height-1);
             Ray<float> r(origin, lower_left_corner - origin + u*horizontal + v*vertical);
-            write_color(std::cout, ray_color(r));  
+            write_color(std::cout, ray_color(r, world));
         }
     }
 
