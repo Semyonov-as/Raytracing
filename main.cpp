@@ -45,8 +45,8 @@ int main() {
         for (int i = 0; i < image_width; ++i) {
             ColorF pixel_color;
             for(int s = 0; s < samples_per_pixel; ++s) {
-                float u = float(i)/(image_width-1);
-                float v = float(j)/(image_height-1);
+                float u = (i + random<float>(-1, 1))/(image_width-1);
+                float v = (j + random<float>(-1, 1))/(image_height-1);
                 Ray<float> r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, world);
             }
