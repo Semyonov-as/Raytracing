@@ -5,6 +5,7 @@
 #include "General.hpp"
 
 #include <iostream>
+#include <cmath>
 
 using ColorD = Vector3D;
 using ColorF = Vector3F;
@@ -16,9 +17,10 @@ void write_color(std::ostream &out, Vector3<T> pixel_color, int spp) noexcept {
     T b = pixel_color.z();
 
     T scale = 1.0/spp;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    // gamma = 2
+    r = sqrt(r*scale);
+    g = sqrt(g*scale);
+    b = sqrt(b*scale);
 
     // Write the translated [0,255] value of each color component.
     out << static_cast<int>(255.999 * clamp<T>(r, 0, 0.999)) << ' '

@@ -4,6 +4,7 @@
 #include <limits>
 #include <memory>
 #include <random>
+#include <cstdlib>
 
 
 // Constants
@@ -19,8 +20,9 @@ double degrees_to_radians(double degrees) {
 
 template<typename T>
 T random(T min, T max) {
-    static std::uniform_real_distribution<T> distribution(min, max);
-    static std::mt19937 generator;
+    static std::random_device rd;
+    static thread_local std::default_random_engine generator(rd());
+    static std::uniform_real_distribution < T > distribution(min, max);
     return distribution(generator);
 }
 

@@ -4,6 +4,8 @@
 #include <cmath>
 #include <stdexcept>
 
+#include "General.hpp"
+
 template<typename T>
 class Vector3 {
 public:
@@ -49,6 +51,15 @@ public:
     friend std::ostream& operator<<(std::ostream &out, const Vector3<T> &r) {
         out << r.e[0] << ' ' << r.e[1] << ' ' << r.e[2];
         return out;
+    }
+
+    static Vector3<T> random_unit_vector() {
+        while(true){
+            Vector3<T> tmp = Vector3<T>(random<T>(-1.0, 1.0), random<T>(-1.0, 1.0), random<T>(-1.0, 1.0));
+            if(tmp.length_squared() > 1)
+                continue;
+            return tmp.unit();
+        }
     }
 };
 
