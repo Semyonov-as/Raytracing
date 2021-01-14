@@ -22,6 +22,10 @@ public:
     const T& y() const noexcept { return e[1];}
     const T& z() const noexcept { return e[2];}
 
+    bool near_zero() { return this->length() <= 1e-8;}
+    Vector3<T> reflect(const Vector3<T>& n) const noexcept{ return *this - 2*dot(*this, n.unit())*n.unit();}
+    Vector3<T> refract(const Vector3<T>&, T) const noexcept;
+
     Vector3<T> operator+() const noexcept { return Vector3(e[0], e[1], e[2]);}
     Vector3<T> operator-() const noexcept { return Vector3(-e[0], -e[1], -e[2]);}
     const T& operator[](int i) const;
@@ -56,6 +60,14 @@ public:
     static Vector3<T> random_unit_vector() {
         while(true){
             Vector3<T> tmp = Vector3<T>(random<T>(-1.0, 1.0), random<T>(-1.0, 1.0), random<T>(-1.0, 1.0));
+            if(tmp.length_squared() > 1)
+                continue;
+            return tmp.unit();
+        }
+    }
+    static Vector3<T> randon_unit_vector_xy() {
+        while(true){
+            Vector3<T> tmp = Vector3<T>(random<T>(-1.0, 1.0), random<T>(-1.0, 1.0), 0);
             if(tmp.length_squared() > 1)
                 continue;
             return tmp.unit();
@@ -104,4 +116,14 @@ T& Vector3<T>::operator[](int i) {
         throw std::invalid_argument("wrong index");
     else
         return e[i];
+}
+
+template<typename T>
+Vector3<T> Vector3<T>::refract(const Vector3<T>& n, T k) const noexcept {  // k = n/n'
+    auto uv = this->unit();
+    auto un = n.unit();
+    T cos = fmin(dot(-uv, un), 1.0);
+    Vector3<T> r_perp = k*(uv + cos*un);
+    Vector3<T> r_par = -sqrt(1.0 - r_perp.length_squared())*un;
+    return r_perp + r_par;
 }

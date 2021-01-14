@@ -8,4 +8,5 @@ add_library(Sphere.hpp INTERFACE)
 add_library(HittableList.hpp INTERFACE)
 add_library(General.hpp INTERFACE)
 add_library(Camera.hpp INTERFACE)
+add_library(Materials.hpp INTERFACE)
 

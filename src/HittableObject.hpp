@@ -1,14 +1,19 @@
 #pragma once
 
+#include <cstdlib>
+
 #include "Ray.hpp"
 #include "Vector3DF.hpp"
 #include "Point3.hpp"
+#include "Materials.hpp"
+
 
 template<typename T>
 class HitRecord {
 public:
     Vector3<T> p;
     Vector3<T> normal;
+    std::shared_ptr<Material<T>> mat_ptr;
     T t;
     bool front_face;
 
