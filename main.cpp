@@ -1,7 +1,3 @@
-#include <iostream>
-#include <cmath>
-#include <memory>
-
 #include "src/Point3.hpp"
 #include "src/Color.hpp"
 #include "src/Ray.hpp"
@@ -13,12 +9,15 @@
 #include "src/Camera.hpp"
 #include "src/Materials.hpp"
 
+#include <iostream>
+#include <cmath>
+#include <memory>
 
 //ColorF ray_color(const Ray<float>& r, const HittableList<float>& world, int depth) {
-//    if(depth < 1)
+//    if (depth < 1)
 //        return ColorF(0, 0, 0);
 //    HitRecord<float> rec;
-//    if(world.hit(r, 0, infinity, rec))
+//    if (world.hit(r, 0, infinity, rec))
 //        return 0.5*ray_color(Ray<float>(rec.p, rec.normal + Vector3<float>::random_unit_vector()), world, depth - 1);
 //    auto t = 0.5*(r.direction().unit().y()+1.0);
 //    return (1.0 - t)*ColorF(1.0, 1.0, 1.0)+t*ColorF(0.5, 0.7, 1);
@@ -48,7 +47,7 @@
 //        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
 //        for (int i = 0; i < image_width; ++i) {
 //            ColorF pixel_color;
-//            for(int s = 0; s < samples_per_pixel; ++s) {
+//            for (int s = 0; s < samples_per_pixel; ++s) {
 //                float u = (i + random<float>(-1, 1))/(image_width-1);
 //                float v = (j + random<float>(-1, 1))/(image_height-1);
 //                Ray<float> r = cam.get_ray(u, v);
@@ -69,19 +68,19 @@ HittableList<double> random_scene() {
     auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.3, 0.5, 0.2));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
 
-    for(int a = -11; a < 11; a++) {
-        for(int b = -11; b < 11; b++) {
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
             double choose = random<double>(0, 1);
             Point3D center(a + 0.8*random<double>(0, 1), 0.2, b + 0.9*random<double>(0, 1));
 
-            if((center - Point3D(4, 0.2, 0)).length() > 0.9) {
+            if ((center - Point3D(4, 0.2, 0)).length() > 0.9) {
                 std::shared_ptr<Material<double>> sphere_material;
                 Vector3<double> rnd = Vector3<double>(random<double>(0, 1), random<double>(0, 1), random<double>(0, 1));
-                if(choose < 0.7) {
+                if (choose < 0.7) {
                     ColorD albedo = rnd*rnd;
                     sphere_material = std::make_shared<Lambertian<double>>(albedo);
                     world.add(std::make_shared<Sphere<double>>(center, 0.2, sphere_material));
-                } else if( choose < 0.9) {
+                } else if ( choose < 0.9) {
                     ColorD albedo = rnd;
                     double fuzz = random<double>(0, 0.5);
                     sphere_material = std::make_shared<Metal<double>>(albedo, fuzz);
@@ -102,13 +101,13 @@ HittableList<double> random_scene() {
 }
 
 ColorD ray_color(const Ray<double>& r, const HittableList<double>& world, int depth) {
-    if(depth < 1)
+    if (depth < 1)
         return ColorD(0, 0, 0);
     HitRecord<double> rec;
-    if(world.hit(r, 0.0001, infinity, rec)) {
+    if (world.hit(r, 0.0001, infinity, rec)) {
         Ray<double> scattered;
         ColorD attenuation;
-        if(rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
             return attenuation*ray_color(scattered, world, depth-1);
         return ColorD(0, 0, 0);
     }
@@ -145,7 +144,7 @@ int main() {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; ++i) {
             ColorD pixel_color;
-            for(int s = 0; s < samples_per_pixel; ++s) {
+            for (int s = 0; s < samples_per_pixel; ++s) {
                 double u = (i + random<double>(-1, 1))/(image_width-1);
                 double v = (j + random<double>(-1, 1))/(image_height-1);
                 Ray<double> r = cam.get_ray(u, v);

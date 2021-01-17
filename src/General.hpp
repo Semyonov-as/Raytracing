@@ -6,7 +6,6 @@
 #include <random>
 #include <cstdlib>
 
-
 // Constants
 
 const double infinity = std::numeric_limits<double>::infinity();
@@ -34,4 +33,3 @@ T clamp(T x, T min, T max) {
         return max;
     return x;
 }
-
