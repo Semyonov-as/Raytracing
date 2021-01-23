@@ -12,6 +12,12 @@
 #include <iostream>
 #include <cmath>
 #include <memory>
+#include <thread>
+
+//Threading
+
+
+
 
 //ColorF ray_color(const Ray<float>& r, const HittableList<float>& world, int depth) {
 //    if (depth < 1)
@@ -120,13 +126,20 @@ int main() {
     //Image settingis
     const double aspect_ratio = 3.0 / 2.0;
     const double vfov = 20.0; //vertical field of view in degrees
-    const int image_width = 800;
+    const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
     const int samples_per_pixel = 100;
     const int max_depth = 50;
 
     //World setup
-    HittableList<double> world = random_scene();
+    HittableList<double> world;
+
+    auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.3, 0.5, 0.2));
+    world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
+    world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
+    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Lambertian<double>>(ColorD(0.4, 0.2, 0.1))));
+    world.add(std::make_shared<Sphere<double>>(Point3D(4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
+
 
     //Camera settingis
     Point3D lookfrom(13, 2, 3);
@@ -138,7 +151,7 @@ int main() {
     Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus);
 
     //Render Image
-    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    PPM_IMAGE image(image_width, image_height);
 
     for (int j = image_height-1; j >= 0; --j) {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
@@ -150,11 +163,12 @@ int main() {
                 Ray<double> r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, world, max_depth);
             }
-            write_color(std::cout, pixel_color, samples_per_pixel);
+            write_color(image, j, i, pixel_color, samples_per_pixel);
         }
     }
 
-    std::cerr << "\nDone.\n";
+    std::cerr << "\nWriting in file.\n";
+    std::cout << image;
 
     return 0;
 }
