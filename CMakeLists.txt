@@ -14,3 +14,7 @@ target_compile_features(main PUBLIC cxx_std_11)
 
 add_executable(main_mutithread main_mutithread.cpp)
 target_compile_features(main_mutithread PUBLIC cxx_std_11)
+#enable threading on Linux
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(main_mutithread PRIVATE Threads::Threads)
