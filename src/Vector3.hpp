@@ -1,10 +1,10 @@
 #pragma once
 
+#include "General.hpp"
+
 #include <iostream>
 #include <cmath>
 #include <stdexcept>
-
-#include "General.hpp"
 
 template<typename T>
 class Vector3 {
@@ -60,7 +60,7 @@ public:
     static Vector3<T> random_unit_vector() {
         while(true){
             Vector3<T> tmp = Vector3<T>(random<T>(-1.0, 1.0), random<T>(-1.0, 1.0), random<T>(-1.0, 1.0));
-            if(tmp.length_squared() > 1)
+            if (tmp.length_squared() > 1)
                 continue;
             return tmp.unit();
         }
@@ -68,7 +68,7 @@ public:
     static Vector3<T> randon_unit_vector_xy() {
         while(true){
             Vector3<T> tmp = Vector3<T>(random<T>(-1.0, 1.0), random<T>(-1.0, 1.0), 0);
-            if(tmp.length_squared() > 1)
+            if (tmp.length_squared() > 1)
                 continue;
             return tmp.unit();
         }

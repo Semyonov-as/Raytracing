@@ -9,7 +9,6 @@
 #include <stdexcept>
 #include <cstdlib>
 
-
 template<typename T>
 class Sphere : public HittableObject<T> {
 public:
@@ -20,15 +19,15 @@ public:
     Sphere() noexcept {}
     Sphere(Vector3<T> _center, T _radius, std::shared_ptr<Material<T>> _mat_ptr) noexcept : center(_center), radius(_radius), mat_ptr(_mat_ptr) {}
 
-    virtual bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept override;
+    bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept override;
 };
 
 template<typename T>
 bool Sphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const noexcept {
     auto oc = r.orig - center;
     auto a = r.direction().length_squared();
-    if(a == 0)
-        throw std::invalid_argument("wrong ray");
+    if (a == 0)
+        return false;
     auto half_b = dot(oc, r.direction());
     auto c = oc.length_squared() - radius*radius;
 

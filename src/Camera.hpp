@@ -1,11 +1,10 @@
 #pragma once
 
-#include <cmath>
-
 #include "General.hpp"
 #include "Vector3.hpp"
 #include "Ray.hpp"
 
+#include <cmath>
 
 template<typename T>
 class Camera {
@@ -17,7 +16,7 @@ public:
     Vector3<T> u, v, w;
     T lens_radius;
 
-    Camera(Vector3<T> lookfrom, Vector3<T> lookat, Vector3<T> vup, T vfov, T aspect_ratio, T aperture, T focus_dist) {
+    Camera(Vector3<T> lookfrom, Vector3<T> lookat, Vector3<T> vup, T vfov, T aspect_ratio, T aperture, T focus_dist) noexcept {
         T viewport_height = 2.0*tan(degrees_to_radians(vfov)/2);
         T viewport_width = viewport_height*aspect_ratio;
 

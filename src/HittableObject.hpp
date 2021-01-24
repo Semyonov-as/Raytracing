@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cstdlib>
-
 #include "Ray.hpp"
 #include "Vector3DF.hpp"
 #include "Point3.hpp"
 #include "Materials.hpp"
 
+#include <cstdlib>
 
 template<typename T>
 class HitRecord {
