@@ -57,12 +57,19 @@ public:
         return out;
     }
 
-    static Vector3<T> random_unit_vector() {
-        while(true){
-            Vector3<T> tmp = Vector3<T>(random<T>(-1.0, 1.0), random<T>(-1.0, 1.0), random<T>(-1.0, 1.0));
-            if (tmp.length_squared() > 1)
+    static Vector3<T> random_unit_vector() { //Marsaglia algorythm
+        while(true) {
+            double tmp_1 = random<double>(-1, 1);
+            double tmp_2 = random<double>(-1, 1);
+            auto sq_1 = tmp_1*tmp_1;
+            auto sq_2 = tmp_2*tmp_2;
+            if(sq_1+sq_2 >= 1)
                 continue;
-            return tmp.unit();
+            auto x = 2*tmp_1*sqrt(1-sq_1-sq_2);
+            auto y = 2*tmp_2*sqrt(1-sq_1-sq_2);
+            auto z = 1 - 2*(sq_1+sq_2);
+
+            return Vector3<double>(x, y, z);
         }
     }
     static Vector3<T> randon_unit_vector_xy() {
