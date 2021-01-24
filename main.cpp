@@ -71,20 +71,13 @@ int main() {
     //Image settingis
     const double aspect_ratio = 3.0 / 2.0;
     const double vfov = 20.0; //vertical field of view in degrees
-    const int image_width = 400;
+    const int image_width = 800;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 50;
     const int max_depth = 50;
 
     //World setup
-    HittableList<double> world;
-
-    auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.3, 0.5, 0.2));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Lambertian<double>>(ColorD(0.4, 0.2, 0.1))));
-    world.add(std::make_shared<Sphere<double>>(Point3D(4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
-
+    HittableList<double> world = random_scene();
 
     //Camera settingis
     Point3D lookfrom(13, 2, 3);

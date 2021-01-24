@@ -13,7 +13,12 @@
 #include <cmath>
 #include <memory>
 #include <thread>
+#include <chrono>
+#include <atomic>
 
+
+//Atomic counter
+std::atomic<int> counter{ 0 };
 
 HittableList<double> random_scene() {
     HittableList<double> world;
@@ -26,21 +31,21 @@ HittableList<double> random_scene() {
             double choose = random<double>(0, 1);
             Point3D center(a + 0.8*random<double>(0, 1), 0.2, b + 0.9*random<double>(0, 1));
 
-            if ((center - Point3D(4, 0.2, 0)).length() > 0.9) {
+            if ((center - Point3D(4, 0.2, 0)).length() > 1.0) {
                 std::shared_ptr<Material<double>> sphere_material;
                 Vector3<double> rnd = Vector3<double>(random<double>(0, 1), random<double>(0, 1), random<double>(0, 1));
                 if (choose < 0.7) {
                     ColorD albedo = rnd*rnd;
                     sphere_material = std::make_shared<Lambertian<double>>(albedo);
                     world.add(std::make_shared<Sphere<double>>(center, 0.2, sphere_material));
-                } else if ( choose < 0.9) {
+                } else if ( choose < 0.95) {
                     ColorD albedo = rnd;
                     double fuzz = random<double>(0, 0.5);
                     sphere_material = std::make_shared<Metal<double>>(albedo, fuzz);
-                    world.add(std::make_shared<Sphere<double>>(center, 0.26, sphere_material));
+                    world.add(std::make_shared<Sphere<double>>(center, 0.18, sphere_material));
                 } else {
                     sphere_material = std::make_shared<Dielectric<double>>(1.5);
-                    world.add(std::make_shared<Sphere<double>>(center, 0.23, sphere_material));
+                    world.add(std::make_shared<Sphere<double>>(center, 0.15, sphere_material));
                 }
             }
         }
@@ -83,30 +88,24 @@ void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<do
                 pixel_color += ray_color(r, world, depth);
             }
             write_color(image, j, i, pixel_color, spp);
+            counter.fetch_add(1, std::memory_order_relaxed);;
         }
     }
 
 }
 
 
-int main() {
+int main() {   
     //Image settingis
     const double aspect_ratio = 3.0 / 2.0;
     const double vfov = 20.0; //vertical field of view in degrees
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 10;
     const int max_depth = 50;
 
     //World setup
-    HittableList<double> world;
-
-    auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.3, 0.5, 0.2));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Lambertian<double>>(ColorD(0.4, 0.2, 0.1))));
-    world.add(std::make_shared<Sphere<double>>(Point3D(4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
-
+    HittableList<double> world = random_scene();
 
     //Camera settingis
     Point3D lookfrom(13, 2, 3);
@@ -123,7 +122,7 @@ int main() {
     std::vector<std::thread> threads;
     int part = static_cast<int>(image_height/MAX_THREADS);
 
-    std::cerr << "\nSetting threads.\n";
+    std::cerr << "Setting threads.\n" << std::flush;
     for(int i = 0; i < MAX_THREADS - 1; i++)
         threads.emplace_back(std::thread(COMPUTE, std::ref(image), i*part, (i+1)*part,
                                          samples_per_pixel, max_depth, std::ref(cam),
@@ -132,13 +131,17 @@ int main() {
                                      samples_per_pixel, max_depth, std::ref(cam),
                                      std::ref(world)));
 
-    std::cerr << "\nWaiting for threads.\n";
+    int total_pixels = image_height*image_width;
+    while(counter.load() < total_pixels - 1){
+        std::cerr << "\rComputing image: " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
     for(auto& t : threads)
         t.join();
+    std::cerr << "\rComputing image: " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
 
 
-
-    std::cerr << "\nWriting in file.\n";
+    std::cerr << "\nWriting in file.\n" << std::flush;;
     std::cout << image;
 
     return 0;
