@@ -54,9 +54,9 @@ bool MovingSphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) 
 }
 
 template<class T>
-bool MovingSphere<T>::bounding_box(T t0, T t1, AABB<T>& out) {
+bool MovingSphere<T>::bounding_box(T t0, T t1, AABB<T>& out) const {
     AABB<T> box0(center(t0) - Vector3<T>(radius, radius, radius), center(t0) + Vector3<T>(radius, radius, radius));
     AABB<T> box1(center(t1) - Vector3<T>(radius, radius, radius), center(t1) + Vector3<T>(radius, radius, radius));
-
+    out = AABB<T>::surrounding_box(box1, box0);
     return true;
 }
