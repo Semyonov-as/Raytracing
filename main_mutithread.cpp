@@ -99,9 +99,9 @@ int main() {
     //Image settingis
     const double aspect_ratio = 3.0 / 2.0;
     const double vfov = 20.0; //vertical field of view in degrees
-    const int image_width = 600;
+    const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 50;
+    const int samples_per_pixel = 10;
     const int max_depth = 50;
 
     //World setup
@@ -141,8 +141,11 @@ int main() {
     std::cerr << "\rComputing image: " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
 
 
-    std::cerr << "\nWriting in file.\n" << std::flush;;
-    std::cout << image;
+    std::cerr << "\nWriting in file.\n" << std::flush;
+
+    //Printing in png file
+    std::string path = "png/1.png";
+    image.print_to_png(path);
 
     return 0;
 }

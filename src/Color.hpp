@@ -8,6 +8,10 @@
 #include <cmath>
 #include <vector>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_MSC_SECURE_CRT
+#include "stb_image/stb_image_write.h"
+
 using ColorD = Vector3D;
 using ColorF = Vector3F;
 
@@ -42,6 +46,21 @@ public:
         }
 
         return out;
+    }
+
+    void print_to_png(std::string& file_name) const {
+        std::vector<unsigned char> _data;
+        constexpr int num_ch = 4;
+        _data.reserve(num_ch*width*height);
+        for(int h = height - 1; h >= 0; --h) {
+            for(int w = 0; w < width; ++w){
+                _data.push_back(data[h][w].r);
+                _data.push_back(data[h][w].r);
+                _data.push_back(data[h][w].r);
+                _data.push_back(255); //alpha channel
+            }
+        }
+        stbi_write_png(file_name.c_str(), width, height, 4, _data.data(), 4*width);
     }
 };
 
