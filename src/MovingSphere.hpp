@@ -19,6 +19,7 @@ public:
         : center0(_center0), center1(_center1), time0(_time0), time1(_time1), radius(_radius), mat_ptr(_mat_ptr) {}
 
     bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept override;
+    bool bounding_box(T, T, AABB<T>&) const override;
 
     Vector3<T> center(T time) const { return center0 + (center1-center0)*((time-time0)/(time1-time0));}
 };
@@ -48,6 +49,14 @@ bool MovingSphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) 
     rec.p = r.at(root);
     rec.set_face_normal(r, (rec.p - center(r.time))/radius);
     rec.mat_ptr = mat_ptr;
+
+    return true;
+}
+
+template<class T>
+bool MovingSphere<T>::bounding_box(T t0, T t1, AABB<T>& out) {
+    AABB<T> box0(center(t0) - Vector3<T>(radius, radius, radius), center(t0) + Vector3<T>(radius, radius, radius));
+    AABB<T> box1(center(t1) - Vector3<T>(radius, radius, radius), center(t1) + Vector3<T>(radius, radius, radius));
 
     return true;
 }

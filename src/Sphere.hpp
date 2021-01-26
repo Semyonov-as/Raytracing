@@ -4,6 +4,7 @@
 #include "Ray.hpp"
 #include "Vector3.hpp"
 #include "Materials.hpp"
+#include "AABB.hpp"
 
 #include <cmath>
 #include <stdexcept>
@@ -20,6 +21,7 @@ public:
     Sphere(Vector3<T> _center, T _radius, std::shared_ptr<Material<T>> _mat_ptr) noexcept : center(_center), radius(_radius), mat_ptr(_mat_ptr) {}
 
     bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept override;
+    bool bounding_box(T, T, AABB<T>&) const override;
 };
 
 template<typename T>
@@ -47,5 +49,11 @@ bool Sphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const 
     rec.set_face_normal(r, (rec.p - center)/radius);
     rec.mat_ptr = mat_ptr;
 
+    return true;
+}
+
+template<class T>
+bool Sphere<T>::bounding_box(T, T, AABB<T>& out) const {
+    out = AABB<T>(center - Vector3<T>(radius, radius, radius), center + Vector3<T>(radius, radius, radius));
     return true;
 }

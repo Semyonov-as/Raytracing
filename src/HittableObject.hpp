@@ -4,6 +4,7 @@
 #include "Vector3DF.hpp"
 #include "Point3.hpp"
 #include "Materials.hpp"
+#include "AABB.hpp"
 
 #include <cstdlib>
 
@@ -25,5 +26,6 @@ public:
 template<typename T>
 class HittableObject {
 public:
+    virtual bool bounding_box(T, T, AABB<T>&) const = 0;
     virtual bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept = 0;
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HittableObject.hpp"
+#include "AABB.hpp"
 
 #include <memory>
 #include <vector>
@@ -17,6 +18,7 @@ public:
     void add(std::shared_ptr<HittableObject<T>> object) noexcept { objects.push_back(object);}
 
     bool hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const noexcept override;
+    bool bounding_box(T, T, AABB<T>&) const override;
 };
 
 template<typename T>
@@ -34,4 +36,22 @@ bool HittableList<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) 
     }
 
     return hit_any;
+}
+
+template<class T>
+bool HittableList<T>::bounding_box(T t_min, T t_max, AABB<T>& out) const {
+    if(objects.empty())
+        return false;
+
+    AABB<T> tmp_box;
+    bool first = true;
+
+    for(const auto& obj: objects) {
+        if(!obj->bounding_box(t_min, t_max, tmp_box))
+            return false;
+        out = first ? tmp_box : AABB<T>::surrounding_box(tmp_box, out);
+        first = false;
+    }
+
+    return true;
 }
