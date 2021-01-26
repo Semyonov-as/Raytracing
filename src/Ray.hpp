@@ -7,9 +7,10 @@ class Ray {
 public:
     Vector3<T> orig;
     Vector3<T> dir;
+    T time;
 
     Ray() noexcept {}
-    Ray(const Vector3<T> &origin, const Vector3<T> &direction) noexcept : orig(origin), dir(direction) {}
+    Ray(const Vector3<T> &origin, const Vector3<T> &direction, T _time = 0.0) noexcept : orig(origin), dir(direction), time(_time) {}
 
     Vector3<T> direction() const noexcept { return dir;}
 

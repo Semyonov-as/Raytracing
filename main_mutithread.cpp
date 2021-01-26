@@ -8,6 +8,7 @@
 #include "src/General.hpp"
 #include "src/Camera.hpp"
 #include "src/Materials.hpp"
+#include "src/MovingSphere.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -101,7 +102,7 @@ int main() {
     const double vfov = 20.0; //vertical field of view in degrees
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 5;
+    const int samples_per_pixel = 50;
     const int max_depth = 50;
 
     //World setup
@@ -109,8 +110,8 @@ int main() {
     auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.1, 0.1, 0.4));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Lambertian<double>>(ColorD(0.4, 0.2, 0.1))));
-    world.add(std::make_shared<Sphere<double>>(Point3D(4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
+    world.add(std::make_shared<MovingSphere<double>>(Point3D(4, 1, 0), Point3D(4, 1.2, 0), 0.0, 1.0, 1.0, std::make_shared<Metal<double>>(ColorD(0.4, 0.2, 0.1), 0)));
+    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
 
 
     //Camera settingis
@@ -120,7 +121,7 @@ int main() {
     double dist_to_focus = 10.0;
     double aperture = 0.1;
 
-    Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus);
+    Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 
     //Render Image
     PPM_IMAGE image(image_width, image_height);

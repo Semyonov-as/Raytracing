@@ -15,8 +15,10 @@ public:
     Vector3<T> lower_left_corner;
     Vector3<T> u, v, w;
     T lens_radius;
+    T time0, time1;
 
-    Camera(Vector3<T> lookfrom, Vector3<T> lookat, Vector3<T> vup, T vfov, T aspect_ratio, T aperture, T focus_dist) noexcept {
+    Camera(Vector3<T> lookfrom, Vector3<T> lookat, Vector3<T> vup,
+           T vfov, T aspect_ratio, T aperture, T focus_dist, T _time0 ,T _time1) noexcept {
         T viewport_height = 2.0*tan(degrees_to_radians(vfov)/2);
         T viewport_width = viewport_height*aspect_ratio;
 
@@ -30,11 +32,13 @@ public:
         lower_left_corner = origin - horizontal/2 - vertical/2 - focus_dist*w;
 
         lens_radius = aperture/2;
+        time0 = _time0;
+        time1 = _time1;
     }
 
     Ray<T> get_ray(T s, T t) const noexcept {
         Vector3<T> rd = lens_radius*Vector3<T>::randon_unit_vector_xy();
         Vector3<T> offset = u*rd.x() + v*rd.y();
-        return Ray<T>(origin + offset, lower_left_corner - origin - offset + s*horizontal + t*vertical);
+        return Ray<T>(origin + offset, lower_left_corner - origin - offset + s*horizontal + t*vertical, random<T>(time0, time1));
     }
 };

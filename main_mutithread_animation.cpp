@@ -27,12 +27,12 @@ HittableList<double> random_scene() {
     auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.3, 0.5, 0.2));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
 
-    for (int a = -11; a < 11; a++) {
-        for (int b = -11; b < 11; b++) {
+    for (int a = -5; a < 5; a++) {
+        for (int b = -5; b < 5; b++) {
             double choose = random<double>(0, 1);
             Point3D center(a + 0.8*random<double>(0, 1), 0.2, b + 0.9*random<double>(0, 1));
 
-            if ((center - Point3D(4, 0.2, 0)).length() > 1.0) {
+            if ((center - Point3D(4, 0.2, 0)).length() > 1.0 && (center - Point3D(0, 0.2, 0)).length() > 1.0 && (center - Point3D(-4, 0.2, 0)).length() > 1.0) {
                 std::shared_ptr<Material<double>> sphere_material;
                 Vector3<double> rnd = Vector3<double>(random<double>(0, 1), random<double>(0, 1), random<double>(0, 1));
                 if (choose < 0.7) {
@@ -100,24 +100,19 @@ int main() {
     //Image settingis
     const double aspect_ratio = 3.0 / 2.0;
     const double vfov = 25.0; //vertical field of view in degrees
-    const int image_width = 500;
+    const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 10;
     const int max_depth = 50;
 
     //World setup
-    HittableList<double> world;
-    auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.2, 0.5, 0.2));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(-2.1, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.8, 0.4, 0.2), 1.0)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(2.1, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
+    HittableList<double> world = random_scene();
 
     int T_MAX = 69;
     for(int t = 0; t <= T_MAX; t++){
         auto start = std::chrono::high_resolution_clock::now();
         //Camera settingis
-        Point3D lookfrom(12-t/5.0, 2, 1 + (t-20)/5.0);
+        Point3D lookfrom(12-t/3.0, 4 - t/25.0, (t-20)/5.0);
         Point3D lookat(0, 1, 0);
         const Vector3<double> vup(0, 1, 0);
         double dist_to_focus = 9.0;//std::abs(12-t)*9/12 + 1;

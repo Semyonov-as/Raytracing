@@ -24,11 +24,11 @@ public:
 
     Lambertian(const Vector3<T> _albedo) noexcept : albedo(_albedo) {}
 
-    bool scatter(const Ray<T>& _, const HitRecord<T>& rec, Vector3<T>& att, Ray<T>& r_out) const override {
+    bool scatter(const Ray<T>& r_in, const HitRecord<T>& rec, Vector3<T>& att, Ray<T>& r_out) const override {
         auto direction = rec.normal + Vector3<T>::random_unit_vector();
         if (direction.near_zero())
             direction = rec.normal;
-        r_out = Ray<T>(rec.p, direction);
+        r_out = Ray<T>(rec.p, direction, r_in.time);
         att = albedo;
         return true;
     }
@@ -43,7 +43,7 @@ public:
     Metal(const Vector3<T>& _albedo, T _fuzz) noexcept : albedo(_albedo), fuzz(_fuzz < 1 ? _fuzz : 1) {}
 
     bool scatter(const Ray<T>& r_in, const HitRecord<T>& rec, Vector3<T>& att, Ray<T>& r_out) const override {
-        r_out = Ray<T>(rec.p, r_in.dir.reflect(rec.normal) + fuzz*Vector3<T>::random_unit_vector());
+        r_out = Ray<T>(rec.p, r_in.dir.reflect(rec.normal) + fuzz*Vector3<T>::random_unit_vector(), r_in.time);
         att = albedo;
         return dot(r_out.dir, rec.normal) > 0;
     }
@@ -63,9 +63,9 @@ public:
         T sin = sqrt(1.0 - cos*cos);
 
         if (sin*k > 1.0 || reflectance(cos, k) > random<T>(0.0, 1.0))
-            r_out = Ray<T>(rec.p, r_in.dir.reflect(rec.normal));
+            r_out = Ray<T>(rec.p, r_in.dir.reflect(rec.normal), r_in.time);
         else
-            r_out = Ray<T>(rec.p, r_in.dir.refract(rec.normal, k));
+            r_out = Ray<T>(rec.p, r_in.dir.refract(rec.normal, k), r_in.time);
 
         return true;
     }
