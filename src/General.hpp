@@ -25,6 +25,10 @@ T random(T min, T max) {
     return distribution(generator);
 }
 
+int random_int(int min, int max) {
+    return static_cast<int>(random<double>(min, max + 1));
+}
+
 template<typename T>
 T clamp(T x, T min, T max) {
     if (x < min)
