@@ -15,6 +15,7 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <sstream>
 
 
 //Atomic counter
@@ -98,60 +99,72 @@ void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<do
 int main() {   
     //Image settingis
     const double aspect_ratio = 3.0 / 2.0;
-    const double vfov = 20.0; //vertical field of view in degrees
-    const int image_width = 400;
+    const double vfov = 25.0; //vertical field of view in degrees
+    const int image_width = 500;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 5;
+    const int samples_per_pixel = 100;
     const int max_depth = 50;
 
     //World setup
     HittableList<double> world;
-    auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.1, 0.1, 0.4));
+    auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.2, 0.5, 0.2));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Lambertian<double>>(ColorD(0.4, 0.2, 0.1))));
-    world.add(std::make_shared<Sphere<double>>(Point3D(4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
+    world.add(std::make_shared<Sphere<double>>(Point3D(-2.1, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.8, 0.4, 0.2), 1.0)));
+    world.add(std::make_shared<Sphere<double>>(Point3D(2.1, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
 
+    int T_MAX = 69;
+    for(int t = 0; t <= T_MAX; t++){
+        auto start = std::chrono::high_resolution_clock::now();
+        //Camera settingis
+        Point3D lookfrom(12-t/5.0, 2, 1 + (t-20)/5.0);
+        Point3D lookat(0, 1, 0);
+        const Vector3<double> vup(0, 1, 0);
+        double dist_to_focus = 9.0;//std::abs(12-t)*9/12 + 1;
+        double aperture = 0.1;//*(std::abs(T_MAX-2*t)/T_MAX + 1);
 
-    //Camera settingis
-    Point3D lookfrom(13, 2, 3);
-    Point3D lookat(0, 0, 0);
-    const Vector3<double> vup(0, 1, 0);
-    double dist_to_focus = 10.0;
-    double aperture = 0.1;
+        Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus);
 
-    Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus);
+        //Render Animation
 
-    //Render Image
-    PPM_IMAGE image(image_width, image_height);
+        PPM_IMAGE image(image_width, image_height);
 
-    std::vector<std::thread> threads;
-    int part = static_cast<int>(image_height/MAX_THREADS);
+        std::vector<std::thread> threads;
+        int part = static_cast<int>(image_height/MAX_THREADS);
 
-    std::cerr << "Setting threads.\n" << std::flush;
-    for(int i = 0; i < MAX_THREADS - 1; i++)
-        threads.emplace_back(std::thread(COMPUTE, std::ref(image), i*part, (i+1)*part,
+        std::cerr << "Setting threads\n" << std::flush;
+        for(int i = 0; i < MAX_THREADS - 1; i++)
+            threads.emplace_back(std::thread(COMPUTE, std::ref(image), i*part, (i+1)*part,
+                                             samples_per_pixel, max_depth, std::ref(cam),
+                                             std::ref(world)));
+        threads.emplace_back(std::thread(COMPUTE, std::ref(image), (MAX_THREADS-1)*part, image_height,
                                          samples_per_pixel, max_depth, std::ref(cam),
                                          std::ref(world)));
-    threads.emplace_back(std::thread(COMPUTE, std::ref(image), (MAX_THREADS-1)*part, image_height,
-                                     samples_per_pixel, max_depth, std::ref(cam),
-                                     std::ref(world)));
 
-    int total_pixels = image_height*image_width;
-    while(counter.load() < total_pixels - 1){
-        std::cerr << "\rComputing image: " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        int total_pixels = image_height*image_width;
+        while(counter.load() < total_pixels - 1){
+            std::cerr << "\rComputing frame " << t+1 <<  ": " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+        std::cerr << "\rComputing frame " << t+1 <<  ": " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
+        for(auto& th : threads)
+            th.join();
+
+
+        std::cerr << "\nWriting in file.\n" << std::flush;
+
+        //Printing in png file
+        std::stringstream path;
+        path << "png/frame" << t << ".png";
+        image.print_to_png(path.str());
+        counter.fetch_sub(counter.load());
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end-start;
+        std::cerr << "It took " << elapsed.count()/1000 << "s\n";
+        std::cerr << "Remaining: " << elapsed.count()*(T_MAX - t)/1000 << "s\n";
+        std::cerr << "---------------------------\n" << std::flush;
     }
-    for(auto& t : threads)
-        t.join();
-    std::cerr << "\rComputing image: " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
-
-
-    std::cerr << "\nWriting in file.\n" << std::flush;
-
-    //Printing in png file
-    std::string path = "png/1.png";
-    image.print_to_png(path);
 
     return 0;
 }

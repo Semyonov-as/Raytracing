@@ -9,7 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 add_subdirectory(src)
 
-add_executable(main main_mutithread.cpp)
+add_executable(main main_mutithread_animation.cpp)
 target_compile_features(main PUBLIC cxx_std_11)
 #enable threading on Linux
 set(THREADS_PREFER_PTHREAD_FLAG ON)

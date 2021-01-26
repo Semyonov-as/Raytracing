@@ -48,15 +48,15 @@ public:
         return out;
     }
 
-    void print_to_png(std::string& file_name) const {
+    void print_to_png(const std::string& file_name) const {
         std::vector<unsigned char> _data;
         constexpr int num_ch = 4;
         _data.reserve(num_ch*width*height);
         for(int h = height - 1; h >= 0; --h) {
             for(int w = 0; w < width; ++w){
                 _data.push_back(data[h][w].r);
-                _data.push_back(data[h][w].r);
-                _data.push_back(data[h][w].r);
+                _data.push_back(data[h][w].g);
+                _data.push_back(data[h][w].b);
                 _data.push_back(255); //alpha channel
             }
         }
