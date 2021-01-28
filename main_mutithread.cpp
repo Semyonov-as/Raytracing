@@ -9,6 +9,7 @@
 #include "src/Camera.hpp"
 #include "src/Materials.hpp"
 #include "src/MovingSphere.hpp"
+#include "src/Textures.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -99,26 +100,26 @@ void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<do
 int main() {   
     //Image settingis
     const double aspect_ratio = 3.0 / 2.0;
-    const double vfov = 20.0; //vertical field of view in degrees
+    const double vfov = 10.0; //vertical field of view in degrees
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 50;
+    const int samples_per_pixel = 100;
     const int max_depth = 50;
 
     //World setup
     HittableList<double> world;
-    auto ground_mat = std::make_shared<Lambertian<double>>(ColorD(0.1, 0.1, 0.4));
+    auto ground_mat = std::make_shared<Lambertian<double>>(std::make_shared<CheckerTexture<double>>(ColorD(1.0, 0.9, 0.9), ColorD(0.2, 0.2, 0.3)));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
     world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
-    world.add(std::make_shared<MovingSphere<double>>(Point3D(4, 1, 0), Point3D(4, 1.2, 0), 0.0, 1.0, 1.0, std::make_shared<Metal<double>>(ColorD(0.4, 0.2, 0.1), 0)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
-
+    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Lambertian<double>>(ColorD(0.4, 0.2, 0.1))));
+    world.add(std::make_shared<Sphere<double>>(Point3D(4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
+    //world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), -0.9, std::make_shared<Dielectric<double>>(1.5)));
 
     //Camera settingis
     Point3D lookfrom(13, 2, 3);
-    Point3D lookat(0, 0, 0);
+    Point3D lookat(0, 1, 0);
     const Vector3<double> vup(0, 1, 0);
-    double dist_to_focus = 10.0;
+    double dist_to_focus = 14.0;
     double aperture = 0.1;
 
     Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
@@ -141,7 +142,7 @@ int main() {
     int total_pixels = image_height*image_width;
     while(counter.load() < total_pixels - 1){
         std::cerr << "\rComputing image: " << static_cast<int>(counter.load()*100/total_pixels) << '%' << std::flush;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     for(auto& t : threads)
         t.join();

@@ -22,6 +22,8 @@ public:
 
     bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept override;
     bool bounding_box(T, T, AABB<T>&) const override;
+
+    static void get_sphere_uv(const Vector3<T>&, T&, T&);
 };
 
 template<typename T>
@@ -46,7 +48,9 @@ bool Sphere<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const 
 
     rec.t = root;
     rec.p = r.at(root);
-    rec.set_face_normal(r, (rec.p - center)/radius);
+    Vector3<T> out_norm = (rec.p - center)/radius;
+    rec.set_face_normal(r, out_norm);
+    get_sphere_uv(out_norm, rec.u, rec.v);
     rec.mat_ptr = mat_ptr;
 
     return true;
@@ -56,4 +60,13 @@ template<class T>
 bool Sphere<T>::bounding_box(T, T, AABB<T>& out) const {
     out = AABB<T>(center - Vector3<T>(radius, radius, radius), center + Vector3<T>(radius, radius, radius));
     return true;
+}
+
+template<class T>
+void Sphere<T>::get_sphere_uv(const Vector3<T>& p, T& u, T& v) {
+    T theta = acos(-p.y());
+    T phi = atan2(-p.z(), p.x()) + pi;
+
+    u = phi/(2*pi);
+    v = theta/pi;
 }

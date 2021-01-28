@@ -15,6 +15,7 @@ public:
     Vector3<T> normal;
     std::shared_ptr<Material<T>> mat_ptr;
     T t;
+    T u, v;
     bool front_face;
 
     void set_face_normal(const Ray<T>& r, const Vector3<T>& out_normal) noexcept {
