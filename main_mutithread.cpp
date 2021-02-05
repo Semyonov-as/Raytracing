@@ -90,7 +90,7 @@ void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<do
                 pixel_color += ray_color(r, world, depth);
             }
             write_color(image, j, i, pixel_color, spp);
-            counter.fetch_add(1, std::memory_order_relaxed);;
+            counter.fetch_add(1, std::memory_order_relaxed);
         }
     }
 
@@ -99,27 +99,24 @@ void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<do
 
 int main() {   
     //Image settingis
-    const double aspect_ratio = 3.0 / 2.0;
-    const double vfov = 10.0; //vertical field of view in degrees
+    const double aspect_ratio = 16.0 / 9.0;
+    const double vfov = 20.0; //vertical field of view in degrees
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 50;
     const int max_depth = 50;
 
     //World setup
     HittableList<double> world;
-    auto ground_mat = std::make_shared<Lambertian<double>>(std::make_shared<CheckerTexture<double>>(ColorD(1.0, 0.9, 0.9), ColorD(0.2, 0.2, 0.3)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, -1000, 0), 1000, ground_mat));
-    world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), 1.0, std::make_shared<Dielectric<double>>(1.5)));
-    world.add(std::make_shared<Sphere<double>>(Point3D(-4, 1, 0), 1.0, std::make_shared<Lambertian<double>>(ColorD(0.4, 0.2, 0.1))));
-    world.add(std::make_shared<Sphere<double>>(Point3D(4, 1, 0), 1.0, std::make_shared<Metal<double>>(ColorD(0.7, 0.6, 0.5), 0)));
-    //world.add(std::make_shared<Sphere<double>>(Point3D(0, 1, 0), -0.9, std::make_shared<Dielectric<double>>(1.5)));
+    auto texture = std::make_shared<ImageTexture<double>>("earthmap.jpg");
+    auto surface = std::make_shared<Lambertian<double>>(texture);
+    world.add(std::make_shared<Sphere<double>>(Vector3<double>(0, 0, 0), 2, surface));
 
     //Camera settingis
     Point3D lookfrom(13, 2, 3);
-    Point3D lookat(0, 1, 0);
+    Point3D lookat(0, 0, 0);
     const Vector3<double> vup(0, 1, 0);
-    double dist_to_focus = 14.0;
+    double dist_to_focus = 10.0;
     double aperture = 0.1;
 
     Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
@@ -129,7 +126,6 @@ int main() {
 
     std::vector<std::thread> threads;
     int part = static_cast<int>(image_height/MAX_THREADS);
-
     std::cerr << "Setting threads.\n" << std::flush;
     for(int i = 0; i < MAX_THREADS - 1; i++)
         threads.emplace_back(std::thread(COMPUTE, std::ref(image), i*part, (i+1)*part,
