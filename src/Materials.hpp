@@ -16,6 +16,7 @@ template<typename T>
 class Material {
 public:
     virtual bool scatter(const Ray<T>&, const HitRecord<T>&, Vector3<T>&, Ray<T>&) const = 0;
+    virtual Vector3<T> emitted(T, T, const Vector3<T>&) const { return Vector3<T>(0, 0, 0);}
 };
 
 template<typename T>
@@ -78,4 +79,16 @@ private:
         r0 = r0*r0;
         return r0 + (1-r0)*pow((1-cos), 5);
     }
+};
+
+template<class T>
+class DiffuseLight : public Material<T> {
+public:
+    std::shared_ptr<Texture<T>> emit;
+
+    DiffuseLight(std::shared_ptr<Texture<T>> a) : emit(a) {}
+    DiffuseLight(Vector3<T> c) : emit(std::make_shared<SolidColor<T>>(c)) {}
+
+    bool scatter(const Ray<T>&, const HitRecord<T>&, Vector3<T>&, Ray<T>&) const override { return false;}
+    Vector3<T> emitted(T u, T v, const Vector3<T>& p) const override { return emit->value(u, v, p);}
 };

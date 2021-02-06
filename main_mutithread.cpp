@@ -10,6 +10,8 @@
 #include "src/Materials.hpp"
 #include "src/MovingSphere.hpp"
 #include "src/Textures.hpp"
+#include "src/AARect.hpp"
+#include "src/Box.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -60,26 +62,27 @@ HittableList<double> random_scene() {
     return world;
 }
 
-ColorD ray_color(const Ray<double>& r, const HittableList<double>& world, int depth) {
+ColorD ray_color(const Ray<double>& r, const ColorD& background, const HittableList<double>& world, int depth) {
     if (depth < 1)
         return ColorD(0, 0, 0);
     HitRecord<double> rec;
-    if (world.hit(r, 0.0001, infinity, rec)) {
-        Ray<double> scattered;
-        ColorD attenuation;
-        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
-            return attenuation*ray_color(scattered, world, depth-1);
-        return ColorD(0, 0, 0);
-    }
-    auto t = 0.5*(r.direction().unit().y()+1.0);
-    return (1.0 - t)*ColorD(1.0, 1.0, 1.0)+t*ColorD(0.5, 0.7, 1);
+    if (!world.hit(r, 0.0001, infinity, rec))
+        return background;
 
+    Ray<double> scattered;
+    ColorD attenuation;
+    ColorD emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
+
+    if (!rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        return emitted;
+
+    return emitted + attenuation*ray_color(scattered, background, world, depth-1);
 }
 
 //Threading
 constexpr int MAX_THREADS = 4;
 
-void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<double>& cam, HittableList<double>& world) {
+void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<double>& cam, HittableList<double>& world, const ColorD& background) {
     for (int j = end-1; j >= begin; --j) {
         for (int i = 0; i < image.width; ++i) {
             ColorD pixel_color;
@@ -87,7 +90,7 @@ void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<do
                 double u = (i + random<double>(-1, 1))/(image.width - 1);
                 double v = (j + random<double>(-1, 1))/(image.height-1);
                 Ray<double> r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, world, depth);
+                pixel_color += ray_color(r, background, world, depth);
             }
             write_color(image, j, i, pixel_color, spp);
             counter.fetch_add(1, std::memory_order_relaxed);
@@ -99,25 +102,38 @@ void COMPUTE(PPM_IMAGE& image, int begin, int end, int spp, int depth, Camera<do
 
 int main() {   
     //Image settingis
-    const double aspect_ratio = 16.0 / 9.0;
-    const double vfov = 20.0; //vertical field of view in degrees
-    const int image_width = 400;
+    const double aspect_ratio = 1.0;
+    const double vfov = 40.0; //vertical field of view in degrees
+    const int image_width = 600;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 50;
+    const int samples_per_pixel = 200;
     const int max_depth = 50;
 
     //World setup
     HittableList<double> world;
-    auto texture = std::make_shared<ImageTexture<double>>("earthmap.jpg");
-    auto surface = std::make_shared<Lambertian<double>>(texture);
-    world.add(std::make_shared<Sphere<double>>(Vector3<double>(0, 0, 0), 2, surface));
+
+    auto red   = std::make_shared<Lambertian<double>>(ColorD(.65, .05, .05));
+    auto white = std::make_shared<Lambertian<double>>(ColorD(.73, .73, .73));
+    auto green = std::make_shared<Lambertian<double>>(ColorD(.12, .45, .15));
+    auto light = std::make_shared<DiffuseLight<double>>(ColorD(15, 15, 15));
+
+    world.add(std::make_shared<YZRect<double>>(0, 555, 0, 555, 555, green));
+    world.add(std::make_shared<YZRect<double>>(0, 555, 0, 555, 0, red));
+    world.add(std::make_shared<XZRect<double>>(213, 343, 227, 332, 554, light));
+    world.add(std::make_shared<XZRect<double>>(0, 555, 0, 555, 0, white));
+    world.add(std::make_shared<XZRect<double>>(0, 555, 0, 555, 555, white));
+    world.add(std::make_shared<XYRect<double>>(0, 555, 0, 555, 555, white));
+
+    world.add(std::make_shared<Box<double>>(Point3D(130, 0, 65), Point3D(295, 165, 230), white));
+    world.add(std::make_shared<Box<double>>(Point3D(265, 0, 295), Point3D(430, 330, 460), white));
 
     //Camera settingis
-    Point3D lookfrom(13, 2, 3);
-    Point3D lookat(0, 0, 0);
+    Point3D lookfrom(278, 278, -800);
+    Point3D lookat(278, 278, 0);
     const Vector3<double> vup(0, 1, 0);
     double dist_to_focus = 10.0;
     double aperture = 0.1;
+    ColorD background(0, 0, 0);
 
     Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 
@@ -130,10 +146,10 @@ int main() {
     for(int i = 0; i < MAX_THREADS - 1; i++)
         threads.emplace_back(std::thread(COMPUTE, std::ref(image), i*part, (i+1)*part,
                                          samples_per_pixel, max_depth, std::ref(cam),
-                                         std::ref(world)));
+                                         std::ref(world), std::ref(background)));
     threads.emplace_back(std::thread(COMPUTE, std::ref(image), (MAX_THREADS-1)*part, image_height,
                                      samples_per_pixel, max_depth, std::ref(cam),
-                                     std::ref(world)));
+                                     std::ref(world), std::ref(background)));
 
     int total_pixels = image_height*image_width;
     while(counter.load() < total_pixels - 1){
