@@ -12,6 +12,8 @@
 #include "src/Textures.hpp"
 #include "src/AARect.hpp"
 #include "src/Box.hpp"
+#include "src/Medium.hpp"
+#include "src/BVH.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -62,6 +64,65 @@ HittableList<double> random_scene() {
     return world;
 }
 
+HittableList<double> box_scene() {
+    HittableList<double> boxes1;
+    auto ground = std::make_shared<Lambertian<double>>(ColorD(0.48, 0.83, 0.53));
+
+    const int boxes_per_side = 20;
+    for (int i = 0; i < boxes_per_side; i++) {
+        for (int j = 0; j < boxes_per_side; j++) {
+            auto w = 200.0;
+            auto x0 = -1000.0 + i*w;
+            auto z0 = -1000.0 + j*w;
+            auto y0 = 0.0;
+            auto x1 = x0 + w;
+            auto y1 = 101*fast_random<double>();
+            auto z1 = z0 + w;
+
+            boxes1.add(std::make_shared<Box<double>>(Point3D(x0,y0,z0), Point3D(x1,y1,z1), ground));
+        }
+    }
+
+    HittableList<double> objects;
+
+    objects.add(std::make_shared<BvhNode<double>>(boxes1, 0, 1));
+
+    auto light = std::make_shared<DiffuseLight<double>>(ColorD(15, 15, 10));
+    objects.add(std::make_shared<XZRect<double>>(123, 423, 147, 412, 554, light));
+
+    auto center1 = Point3D(400, 400, 200);
+    auto center2 = center1 + Vector3D(30,0,0);
+    auto moving_sphere_material = std::make_shared<Lambertian<double>>(ColorD(0.7, 0.3, 0.1));
+    objects.add(std::make_shared<MovingSphere<double>>(center1, center2, 0, 1, 50, moving_sphere_material));
+
+    objects.add(std::make_shared<Sphere<double>>(Point3D(260, 150, 45), 50, std::make_shared<Dielectric<double>>(1.5)));
+    objects.add(std::make_shared<Sphere<double>>(Point3D(0, 150, 145), 50, std::make_shared<Metal<double>>(ColorD(0.8, 0.8, 0.9), 1.0)));
+
+    auto boundary = std::make_shared<Sphere<double>>(Point3D(360,150,145), 70, std::make_shared<Dielectric<double>>(1.5));
+    objects.add(boundary);
+    objects.add(std::make_shared<ConstantMedium<double>>(boundary, 0.2, ColorD(0.2, 0.4, 0.9)));
+    boundary = std::make_shared<Sphere<double>>(Point3D(0, 0, 0), 5000, std::make_shared<Dielectric<double>>(1.5));
+    objects.add(std::make_shared<ConstantMedium<double>>(boundary, .0001, ColorD(1,1,1)));
+
+    auto emat = std::make_shared<Lambertian<double>>(std::make_shared<ImageTexture<double>>("earthmap.jpg"));
+    objects.add(std::make_shared<Sphere<double>>(Point3D(400,200,400), 100, emat));
+    auto pertext = std::make_shared<NoiseTexture<double>>(0.1);
+    objects.add(std::make_shared<Sphere<double>>(Point3D(220,280,300), 80, std::make_shared<Lambertian<double>>(pertext)));
+
+    HittableList<double> boxes2;
+    auto white = std::make_shared<Lambertian<double>>(ColorD(.73, .73, .73));
+    int ns = 1000;
+    for (int j = 0; j < ns; j++) {
+        boxes2.add(std::make_shared<Sphere<double>>(Vector3<double>(165*fast_random<double>(), 165*fast_random<double>(), 165*fast_random<double>()), 10, white));
+    }
+
+    objects.add(std::make_shared<Translate<double>>(std::make_shared<RotateY<double>>(
+            std::make_shared<BvhNode<double>>(boxes2, 0.0, 1.0), 15),
+            Vector3D(100,220,395)));
+
+    return objects;
+}
+
 ColorD ray_color(const Ray<double>& r, const ColorD& background, const HittableList<double>& world, int depth) {
     if (depth < 1)
         return ColorD(0, 0, 0);
@@ -104,36 +165,43 @@ int main() {
     //Image settingis
     const double aspect_ratio = 1.0;
     const double vfov = 40.0; //vertical field of view in degrees
-    const int image_width = 600;
+    const int image_width = 800;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 200;
+    const int samples_per_pixel = 1000;
     const int max_depth = 50;
 
     //World setup
-    HittableList<double> world;
+    HittableList<double> world = box_scene();
 
-    auto red   = std::make_shared<Lambertian<double>>(ColorD(.65, .05, .05));
-    auto white = std::make_shared<Lambertian<double>>(ColorD(.73, .73, .73));
-    auto green = std::make_shared<Lambertian<double>>(ColorD(.12, .45, .15));
-    auto light = std::make_shared<DiffuseLight<double>>(ColorD(15, 15, 15));
+//    auto red   = std::make_shared<Lambertian<double>>(ColorD(.65, .05, .05));
+//    auto white = std::make_shared<Lambertian<double>>(ColorD(.73, .73, .73));
+//    auto green = std::make_shared<Lambertian<double>>(ColorD(.12, .45, .15));
+//    auto light = std::make_shared<DiffuseLight<double>>(ColorD(7, 7, 7));
 
-    world.add(std::make_shared<YZRect<double>>(0, 555, 0, 555, 555, green));
-    world.add(std::make_shared<YZRect<double>>(0, 555, 0, 555, 0, red));
-    world.add(std::make_shared<XZRect<double>>(213, 343, 227, 332, 554, light));
-    world.add(std::make_shared<XZRect<double>>(0, 555, 0, 555, 0, white));
-    world.add(std::make_shared<XZRect<double>>(0, 555, 0, 555, 555, white));
-    world.add(std::make_shared<XYRect<double>>(0, 555, 0, 555, 555, white));
+//    world.add(std::make_shared<YZRect<double>>(0, 555, 0, 555, 555, green));
+//    world.add(std::make_shared<YZRect<double>>(0, 555, 0, 555, 0, red));
+//    world.add(std::make_shared<XZRect<double>>(113, 443, 127, 432, 554, light));
+//    world.add(std::make_shared<XZRect<double>>(0, 555, 0, 555, 0, white));
+//    world.add(std::make_shared<XZRect<double>>(0, 555, 0, 555, 555, white));
+//    world.add(std::make_shared<XYRect<double>>(0, 555, 0, 555, 555, white));
 
-    world.add(std::make_shared<Box<double>>(Point3D(130, 0, 65), Point3D(295, 165, 230), white));
-    world.add(std::make_shared<Box<double>>(Point3D(265, 0, 295), Point3D(430, 330, 460), white));
+//    std::shared_ptr<HittableObject<double>> box1 = std::make_shared<Box<double>>(Point3D(0, 0, 0), Point3D(165, 330, 165), white);
+//    box1 = std::make_shared<RotateY<double>>(box1, 15);
+//    box1 = std::make_shared<Translate<double>>(box1, Vector3D(265, 0, 295));
+//    world.add(std::make_shared<ConstantMedium<double>>(box1, 0.01, Vector3D(0, 0, 0)));
+
+//    std::shared_ptr<HittableObject<double>> box2 = std::make_shared<Box<double>>(Point3D(0, 0, 0), Point3D(165, 165, 165), white);
+//    box2 = std::make_shared<RotateY<double>>(box2, -18);
+//    box2 = std::make_shared<Translate<double>>(box2, Vector3D(130, 0, 65));
+//    world.add(std::make_shared<ConstantMedium<double>>(box2, 0.01, Vector3D(1, 1, 1)));
 
     //Camera settingis
-    Point3D lookfrom(278, 278, -800);
+    Point3D lookfrom(478, 278, -600);
     Point3D lookat(278, 278, 0);
     const Vector3<double> vup(0, 1, 0);
     double dist_to_focus = 10.0;
-    double aperture = 0.1;
-    ColorD background(0, 0, 0);
+    double aperture = 0; //defocus blur is off
+    ColorD background(0.0, 0.0, 0.0);
 
     Camera<double> cam(lookfrom,  lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 

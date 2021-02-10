@@ -57,6 +57,8 @@ public:
         return out;
     }
 
+    static Vector3<T> random_vec(T min, T max) { return Vector3<T>(random<T>(min, max), random<T>(min, max), random<T>(min, max));}
+
     static Vector3<T> random_unit_vector() { //Marsaglia algorythm
         while(true) {
             double tmp_1 = random<double>(-1, 1);

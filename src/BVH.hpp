@@ -20,9 +20,9 @@ public:
     BvhNode() {}
     BvhNode(const std::vector<std::shared_ptr<HittableObject<T>>>& , size_t, size_t, T, T);
     BvhNode(const HittableList<T>& list, T time0, T time1)
-        : BvhNode(list.objects, 0, list.objects.size(), time0, time1) {}
+        : BvhNode(list.objects, 0, list.objects.size() - 1, time0, time1) {}
 
-    bool hit(const Ray<T>&, T, T, HitRecord<T>&) const override;
+    bool hit(const Ray<T>&, T, T, HitRecord<T>&) const noexcept override;
     bool bounding_box(T, T, AABB<T>&) const override;
 
     static bool box_compare(std::shared_ptr<HittableObject<T>>, std::shared_ptr<HittableObject<T>>, int);
@@ -32,13 +32,13 @@ public:
 };
 
 template<class T>
-bool BvhNode<T>::bounding_box(T _, T __, AABB<T>& out) const {
+bool BvhNode<T>::bounding_box(T, T, AABB<T>& out) const {
     out = box;
     return true;
 }
 
 template<class T>
-bool BvhNode<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const {
+bool BvhNode<T>::hit(const Ray<T>& r, T t_min, T t_max, HitRecord<T>& rec) const noexcept{
     if(!box.hit(r, t_min, t_max))
         return false;
 
@@ -53,8 +53,7 @@ bool BvhNode<T>::box_compare(std::shared_ptr<HittableObject<T>> a, std::shared_p
     AABB<T> box_a;
     AABB<T> box_b;
 
-    assert((!a->bounding_box(0, 0, box_a) || !b->bounding_box(0, 0, box_b))
-           &&"No bounding box in BvhNode constructor.\n");
+    assert(a->bounding_box(0, 0, box_a) && b->bounding_box(0, 0, box_b));
 
     return box_a.minimum[axis] < box_b.minimum[axis];
 }
@@ -89,8 +88,7 @@ BvhNode<T>::BvhNode(const std::vector<std::shared_ptr<HittableObject<T>>>& src_o
 
     AABB<T> box_left, box_right;
 
-    assert((!left->bounding_box(t0, t1, box_left) || !right->bounding_box(t0, t1, box_right))
-           &&"No bounding box in BvhNode constructor.\n");
+    assert(left->bounding_box(t0, t1, box_left) && right->bounding_box(t0, t1, box_right));
 
     box = AABB<T>::surrounding_box(box_left, box_right);
 }

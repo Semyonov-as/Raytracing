@@ -92,3 +92,18 @@ public:
     bool scatter(const Ray<T>&, const HitRecord<T>&, Vector3<T>&, Ray<T>&) const override { return false;}
     Vector3<T> emitted(T u, T v, const Vector3<T>& p) const override { return emit->value(u, v, p);}
 };
+
+template<class T>
+class Isotropic : public Material<T> {
+public:
+    std::shared_ptr<Texture<T>> albedo;
+
+    Isotropic(Vector3<T> color) : albedo(std::make_shared<SolidColor<T>>(color)) {}
+    Isotropic(std::shared_ptr<Texture<T>> _al) : albedo(_al) {}
+
+    bool scatter(const Ray<T>& r_in, const HitRecord<T>& rec, Vector3<T>& att, Ray<T>& r_out) const override {
+        r_out = Ray<T>(rec.p, Vector3<T>::random_unit_vector(), r_in.time);
+        att = albedo->value(rec.u, rec.v, rec.p);
+        return true;
+    }
+};
