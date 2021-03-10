@@ -23,13 +23,13 @@ public:
     PIXEL(int _r, int _g, int _b) : r(_r), g(_g), b(_b) {}
 };
 
-class PPM_IMAGE {
+class IMAGE {
 public:
     std::vector<std::vector<PIXEL>> data;
     int width;
     int height;
 
-    PPM_IMAGE(int _width, int _height) {
+    IMAGE(int _width, int _height) {
         width = _width;
         height = _height;
         data = std::vector<std::vector<PIXEL>>(height, std::vector<PIXEL>(width, PIXEL(0, 0, 0)));
@@ -38,7 +38,7 @@ public:
     //add exception!
     void set_pixel(int w, int h, PIXEL p) { data[w][h] = p;}
 
-    friend std::ostream& operator<<(std::ostream &out, const PPM_IMAGE& img) {
+    friend std::ostream& operator<<(std::ostream &out, const IMAGE& img) {
         out << "P3\n" << img.width << ' ' << img.height << "\n255\n";
         for(int h = img.height - 1; h >= 0; --h) {
             for(int w = 0; w < img.width; ++w)
@@ -66,7 +66,7 @@ public:
 
 
 template<typename T>
-void write_color(PPM_IMAGE& img, int h, int w, Vector3<T> pixel_color, int spp) noexcept {
+void write_color(IMAGE& img, int h, int w, Vector3<T> pixel_color, int spp) noexcept {
     T r = pixel_color.x();
     T g = pixel_color.y();
     T b = pixel_color.z();
